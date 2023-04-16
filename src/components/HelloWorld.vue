@@ -49,14 +49,14 @@
 
 </template>
 <script setup lang="ts">
-import {UploadFile, UploadFiles} from "element-plus";
-import {ref} from 'vue'
+import {ElMessageBox, UploadFile, UploadFiles} from "element-plus";
+import {ref,h} from 'vue'
 import request from "@/utils/request";
 const dialogVisible = ref(false)
 const pickUpCode = ref('')
 const upload = ref('src/assets/upload.svg')
 const download = ref('src/assets/download.svg')
-const fileList: any[] = []
+let fileList: any[] = []
 const onChange = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
   fileList.push(uploadFile)
 }
@@ -68,15 +68,29 @@ const uploadFile=()=>{
     })
   }
   // TODO 上传文件
-  request.upload("/uploadFile",formData).then(res=>{
-    console.log(res)
+  request.upload("/uploadFile",formData).then((res:any)=>{
+    ElMessageBox.alert(res.data, '请保管好取货码', {
+      confirmButtonText: 'OK',
+      center:true
+    })
   })
 }
 const downloadFile=()=>{
-  console.log(pickUpCode.value)
   // TODO 获取文件
-  request.get("/downloadFile",{pickUpCode:'123456'}).then(res=>{
-    console.log(res)
+  request.get("/downloadFile",{pick_up_code:pickUpCode.value}).then((res:any)=>{
+    let temp = res.headers['content-disposition'].length
+    let filename = res.headers['content-disposition'].slice(21,temp-1)
+    // TODO 下载文件时获取到的file_name一直是乱码的，现在只能下载英文的
+    let url = window.URL.createObjectURL(new Blob([res]))
+    let a = document.createElement('a')
+    a.style.display = 'none'
+    a.href = url
+    // 这里要把字符的 "" 去掉，不然下载的文件名会多出_
+    a.download=filename
+    document.body.appendChild(a)
+    a.click() //执行下载
+    window.URL.revokeObjectURL(a.href) //释放url
+    document.body.removeChild(a) //释放标签
   })
 }
 </script>
