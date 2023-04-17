@@ -55,9 +55,8 @@ const http = {
             _axios({
                 url,
                 params,
-                headers: {'Content-Type': 'application/jsoncharset=UTF-8'},
+                headers: {'Content-Type': 'application/json charset=UTF-8'},
                 method: 'GET',
-                responseType: 'blob',
             }).then(res => {
                 resolve(res)
                 return res
@@ -71,8 +70,24 @@ const http = {
             _axios({
                 url,
                 data: params,
-                headers: {'Content-Type': 'application/jsoncharset=UTF-8'},
+                headers: {'Content-Type': 'application/json'},
                 method: 'POST'
+            }).then(res => {
+                resolve(res)
+                return res
+            }).catch(error => {
+                reject(error)
+            })
+        })
+    },
+    download(url = '', params = {}) {
+        return new Promise((resolve, reject) => {
+            _axios({
+                url,
+                params,
+                headers: {'Content-Type': 'application/json charset=UTF-8'},
+                method: 'GET',
+                responseType: 'blob',
             }).then(res => {
                 resolve(res)
                 return res
