@@ -3,10 +3,8 @@
     <div style="padding-left: 20%;float: left;padding-bottom: 10%;width: 25%">
       <el-upload
           class="upload-demo"
-          drag
-          action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-          multiple
-          show-file-list
+          :drag="true"
+          :file-list="fileList"
           :auto-upload="false"
           :on-change="onChange"
       >
@@ -22,15 +20,26 @@
       </div>
     </div>
     <div style="padding-right: 20%;float: right;padding-bottom: 10%;width: 25%;">
-      <div class="downloadDiv">
-        <el-image style="width: 67px;height: 100px;display: block;margin: auto;padding-top: 20px" :src="download"
-                  fit="fill" @click="pickUpCodeVisible=true"/>
-        <span style="font-size: 14px">点击或者拖拽文件</span>
-      </div>
+      <el-upload
+          :drag="true"
+          class="upload-demo"
+          :disabled="true"
+          @click="openDownloadFileDialog"
+      >
+        <el-icon class="el-icon--upload">
+          <el-image style="width: 100px; height: 100px" :src="download" fit="fill"/>
+        </el-icon>
+        <div class="el-upload__text">
+          点击下载文件
+        </div>
+      </el-upload>
     </div>
     <div style="padding-right: 30%;float: right;padding-bottom: 10%;width: 25%;">
       <div style="float: contour">
-        <el-button type="primary" @click="storageTimeVisible=true">延长存放时间</el-button>
+        <el-button type="primary" @click="openStorageTimeDialog">延长存放时间</el-button>
+      </div>
+      <div style="float: contour;padding-top: 20px;margin-left: -8%">
+        <el-tag class="ml-2" type="danger" style="width: 200px;">注意，存放时间最低计算单位是小时</el-tag>
       </div>
     </div>
   </div>
@@ -82,14 +91,14 @@
 </template>
 <script setup lang="ts">
 import {ElMessage, ElMessageBox, UploadFile, UploadFiles} from "element-plus";
-import {ref, h} from 'vue'
+import {reactive, ref} from 'vue'
 import request from "@/utils/request";
 
-const pickUpCodeVisible = ref(false)
-const storageTimeVisible = ref(false)
-const pickUpCode = ref('')
-const storageTime = ref('')
-const stPickUpCode = ref('')
+let pickUpCodeVisible = ref(false)
+let storageTimeVisible = ref(false)
+let pickUpCode = ref('')
+let storageTime = ref('')
+let stPickUpCode = ref('')
 const storageTimes = [
   {
     value: '1',
@@ -110,7 +119,7 @@ const storageTimes = [
 ]
 const upload = ref('src/assets/upload.svg')
 const download = ref('src/assets/download.svg')
-let fileList: any[] = []
+let fileList: any[] = reactive([])
 const onChange = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
   fileList.push(uploadFile)
 }
@@ -128,6 +137,7 @@ const uploadFile = () => {
       center: true
     })
   })
+  fileList.length = 0
 }
 const downloadFile = () => {
   // TODO 获取文件
@@ -146,6 +156,7 @@ const downloadFile = () => {
     window.URL.revokeObjectURL(a.href) //释放url
     document.body.removeChild(a) //释放标签
   })
+  pickUpCodeVisible.value = false
 }
 const extendStorageTime = () => {
   request.post("/extend_storage_time", {
@@ -160,24 +171,16 @@ const extendStorageTime = () => {
     storageTimeVisible.value = false
   })
 }
+const openDownloadFileDialog = () => {
+  pickUpCode= ref("")
+  pickUpCodeVisible.value = true
+}
+const openStorageTimeDialog = () => {
+  stPickUpCode= ref("")
+  storageTime= ref("")
+  storageTimeVisible.value = true
+}
 </script>
 
 <style scoped>
-.downloadDiv {
-  width: 480px;
-  height: 186px;
-  border: 1px dashed #dcdfe6;
-  border-radius: 6px;
-  box-sizing: border-box;
-  text-align: center;
-}
-
-.downloadDiv :hover {
-  width: 480px;
-  height: 186px;
-  border: 1px dashed red;
-  border-radius: 6px;
-  text-align: center;
-  cursor: pointer;
-}
 </style>
