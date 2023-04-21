@@ -2,6 +2,7 @@
   <div style="height: 100%;width: 100%">
     <div style="padding-left: 20%;float: left;padding-bottom: 10%;width: 25%">
       <el-upload
+          ref="uploadRef"
           class="upload-demo"
           :drag="true"
           :file-list="fileList"
@@ -90,7 +91,7 @@
 
 </template>
 <script setup lang="ts">
-import {ElMessage, ElMessageBox, UploadFile, UploadFiles} from "element-plus";
+import {ElMessage, ElMessageBox, UploadFile, UploadFiles, UploadInstance} from "element-plus";
 import {reactive, ref} from 'vue'
 import request from "@/utils/request";
 
@@ -120,6 +121,7 @@ const storageTimes = [
 const upload = ref('src/assets/upload.svg')
 const download = ref('src/assets/download.svg')
 let fileList: any[] = reactive([])
+const uploadRef = ref<UploadInstance>()
 const onChange = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
   fileList.push(uploadFile)
 }
@@ -134,10 +136,14 @@ const uploadFile = () => {
   request.upload("/upload_file", formData).then((res: any) => {
     ElMessageBox.alert(res.data, '请保管好取货码', {
       confirmButtonText: 'OK',
-      center: true
+      center: true,
+      callback:()=>{
+        uploadRef.value!.clearFiles()
+      }
     })
+
   })
-  fileList.length = 0
+
 }
 const downloadFile = () => {
   // TODO 获取文件
